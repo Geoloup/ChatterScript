@@ -1,1 +1,173 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
 
+<style id="webmakerstyle">
+/* styles.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 80%;
+    max-width: 900px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 24px;
+    color: #333333;
+}
+
+.editor {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+textarea {
+    width: 100%;
+    height: 200px;
+    padding: 15px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: none;
+    background-color: #f9f9f9;
+    color: #333333;
+    outline: none;
+}
+
+textarea::placeholder {
+    color: #888888;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.output {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+}
+
+.output h2 {
+    font-size: 18px;
+    color: #333333;
+    margin-bottom: 10px;
+}
+
+.output-box {
+    height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    padding: 10px;
+    border-radius: 5px;
+    color: #333333;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatterScript Editor</title>
+    <link rel="stylesheet" href="styles.css">
+
+
+    <div class="container">
+        <header>
+            <h1>ChatterScript Editor</h1>
+        </header>
+
+        <div class="editor">
+            <textarea id="scriptInput" placeholder="Write your ChatterScript (.csc) here..."></textarea>
+        </div>
+
+        <div class="controls">
+            <button id="runScript" class="button">Run Script</button>
+        </div>
+
+        <div class="output">
+            <h2>Output</h2>
+            <div id="scriptOutput" class="output-box"></div>
+        </div>
+    </div>
+
+    <!-- Import the ChatterScript parser -->
+    <script src="https://cdn.jsdelivr.net/gh/geoloup/ChatterScript/parser/parser.js"></script>
+    <script src="script.js"></script>
+
+
+
+
+<script>// script.js
+document.getElementById("runScript").addEventListener("click", () => {
+    const scriptInput = document.getElementById("scriptInput").value;
+    const outputBox = document.getElementById("scriptOutput");
+
+    // Clear previous output
+    outputBox.textContent = '';
+
+    try {
+        const chatterScript = new ChatterScript(); // Make sure to replace with actual class name if different
+        chatterScript.loadFromString(scriptInput);
+        
+        // Trigger a sample event for demonstration
+        chatterScript.triggerEvent('new_message', { message: 'hello' });
+
+        // Retrieve and display logs
+        const logs = chatterScript.getLogs();
+        outputBox.textContent = logs ? logs : "No logs available.";
+    } catch (error) {
+        outputBox.textContent = `Error: ${error.message}`;
+    }
+});
+
+//# sourceURL=userscript.js
+</script>
+
+</body></html>
