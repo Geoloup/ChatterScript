@@ -26,73 +26,77 @@ class ChatterScript {
         for (let line of lines) {
             line = line.trim();
 
-            if (this.isSafe(line)) {
-                // Handle events
-                if (line.startsWith('on ')) {
-                    const eventName = line.split(' ')[1].replace(':', '');
-                    this.events[eventName] = [];
-                    this.log.push(`Event handler for '${eventName}' registered.`);
-                }
+            // Handle events
+            if (line.startsWith('on ')) {
+                const eventName = line.split(' ')[1].replace(':', '');
+                this.events[eventName] = [];
+                this.log.push(`Event handler for '${eventName}' registered.`);
+            }
 
-                // Handle class definitions
-                else if (line.startsWith('class ')) {
-                    const className = line.split(' ')[1].replace(':', '');
-                    this.classes[className] = {};
-                    currentClass = className;
-                    this.log.push(`Class '${className}' defined.`);
-                }
+            // Handle class definitions
+            else if (line.startsWith('class ')) {
+                const className = line.split(' ')[1].replace(':', '');
+                this.classes[className] = {};
+                currentClass = className;
+                this.log.push(`Class '${className}' defined.`);
+            }
 
-                // Handle function definitions inside classes
-                else if (line.startsWith('function ') && currentClass) {
-                    const funcName = line.split(' ')[1].replace(':', '');
-                    this.classes[currentClass][funcName] = (args) => {
-                        this.log.push(`Executing function ${funcName} in class ${currentClass} with args: ${JSON.stringify(args)}`);
-                    };
-                    this.log.push(`Function '${funcName}' defined in class '${currentClass}'.`);
-                }
+            // Handle function definitions inside classes
+            else if (line.startsWith('function ') && currentClass) {
+                const funcName = line.split(' ')[1].replace(':', '');
+                this.classes[currentClass][funcName] = (args) => {
+                    this.log.push(`Executing function ${funcName} in class ${currentClass} with args: ${JSON.stringify(args)}`);
+                };
+                this.log.push(`Function '${funcName}' defined in class '${currentClass}'.`);
+            }
 
-                // Handle replies and messages
-                else if (line.startsWith('reply(')) {
-                    const message = line.match(/"([^"]+)"/)[1];
-                    this.log.push(`Bot replies: ${message}`);
-                } else if (line.startsWith('say(')) {
-                    const message = line.match(/"([^"]+)"/)[1];
-                    this.log.push(`Bot says: ${message}`);
-                }
+            // Handle replies and messages
+            else if (line.startsWith('reply(')) {
+                const message = line.match(/"([^"]+)"/)[1];
+                this.log.push(`Bot replies: ${message}`);
+            } else if (line.startsWith('say(')) {
+                const message = line.match(/"([^"]+)"/)[1];
+                this.log.push(`Bot says: ${message}`);
+            }
 
-                // Allow calls to defined functions and methods
-                else if (this.isFunctionCall(line)) {
-                    const methodName = line.split('(')[0].trim();
-                    this.log.push(`Executing method call: ${methodName}`);
-                }
-            } else {
-                // Log unsafe code detection without throwing an error
-                this.log.push(`Unsafe code detected: ${line}`);
+            // Allow calls to defined functions and methods
+            else if (this.isFunctionCall(line)) {
+                const methodName = line.split('(')[0].trim();
+                const args = this.extractArgs(line);
+                this.callFunction(methodName, args);
             }
         }
     }
 
-    isSafe(line) {
-        // Define allowed operations and check for function or class calls
-        const safeKeywords = ['on', 'class', 'function', 'reply', 'say', 'if', 'contains'];
-
-        // Check for safe keywords
-        // safeKeywords.some(keyword => line.startsWith(keyword));
-        const isKeywordSafe = true;
-        
-        return isKeywordSafe || this.isFunctionCall(line);
+    isFunctionCall(line) {
+        const functionCallRegex = /(\w+)\.(\w+)\s*\(\s*(.*)\s*\)/; // Matches method calls like ClassName.methodName(args)
+        return functionCallRegex.test(line);
     }
 
-    isFunctionCall(line) {
-        const functionCallRegex = /(\w+)\.(\w+)\s*\(\s*.*\)/; // Matches method calls like ClassName.methodName(args)
+    extractArgs(line) {
+        const functionCallRegex = /(\w+)\.(\w+)\s*\(\s*(.*)\s*\)/; // Matches method calls like ClassName.methodName(args)
+        const match = line.match(functionCallRegex);
+        if (match) {
+            const argsString = match[3]; // Extract the arguments string
+            return argsString.split(',').map(arg => arg.trim().replace(/['"]/g, '')); // Return as an array of strings
+        }
+        return [];
+    }
+
+    callFunction(line, args) {
+        const functionCallRegex = /(\w+)\.(\w+)/; // Matches method calls like ClassName.methodName
         const match = line.match(functionCallRegex);
         if (match) {
             const className = match[1];
             const methodName = match[2];
             // Check if the class and method exist
-            return className in this.classes && methodName in this.classes[className];
+            if (className in this.classes && methodName in this.classes[className]) {
+                this.classes[className][methodName](args); // Call the function with arguments
+                this.log.push(`Called method ${className}.${methodName} with args: ${JSON.stringify(args)}`);
+            } else {
+                this.log.push(`Error: Method ${methodName} not found in class ${className}`);
+            }
         }
-        return false;
     }
 
     triggerEvent(eventName, data) {
