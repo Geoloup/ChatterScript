@@ -59,6 +59,12 @@ class ChatterScript {
                     const message = line.match(/"([^"]+)"/)[1];
                     this.log.push(`Bot says: ${message}`);
                 }
+
+                // Allow calls to defined functions and methods
+                else if (this.isFunctionCall(line)) {
+                    const methodName = line.split('(')[0].trim();
+                    this.log.push(`Executing method call: ${methodName}`);
+                }
             } else {
                 // Log unsafe code detection without throwing an error
                 this.log.push(`Unsafe code detected: ${line}`);
@@ -70,38 +76,20 @@ class ChatterScript {
         // Define allowed operations and check for function or class calls
         const safeKeywords = ['on', 'class', 'function', 'reply', 'say', 'if', 'contains'];
 
-        // Allow function calls only for defined functions
-        const functionCallRegex = /(\w+)\(\s*.*\)/; // Matches function calls like functionName(args)
-        const classCallRegex = /(\w+)\s*::/; // Matches class instantiation like ClassName::
-
         // Check for safe keywords
         const isKeywordSafe = safeKeywords.some(keyword => line.startsWith(keyword));
-
-        // Check for function calls
-        const isFunctionCallSafe = functionCallRegex.test(line) && this.isDefinedFunction(line);
-        const isClassCallSafe = classCallRegex.test(line) && this.isDefinedClass(line);
-
-        return isKeywordSafe || isFunctionCallSafe || isClassCallSafe;
+        
+        return isKeywordSafe || this.isFunctionCall(line);
     }
 
-    isDefinedFunction(line) {
-        const functionCallRegex = /(\w+)\(\s*.*\)/; // Matches function calls like functionName(args)
+    isFunctionCall(line) {
+        const functionCallRegex = /(\w+)\.(\w+)\s*\(\s*.*\)/; // Matches method calls like ClassName.methodName(args)
         const match = line.match(functionCallRegex);
         if (match) {
-            const functionName = match[1];
-            // Check if the function exists in any defined class
-            return Object.values(this.classes).some(cls => functionName in cls);
-        }
-        return false;
-    }
-
-    isDefinedClass(line) {
-        const classCallRegex = /(\w+)\s*::/; // Matches class calls like ClassName::
-        const match = line.match(classCallRegex);
-        if (match) {
             const className = match[1];
-            // Check if the class exists
-            return className in this.classes;
+            const methodName = match[2];
+            // Check if the class and method exist
+            return className in this.classes && methodName in this.classes[className];
         }
         return false;
     }
