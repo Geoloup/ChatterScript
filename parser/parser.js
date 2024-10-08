@@ -77,7 +77,8 @@ class ChatterScript {
         const safeKeywords = ['on', 'class', 'function', 'reply', 'say', 'if', 'contains'];
 
         // Check for safe keywords
-        const isKeywordSafe = safeKeywords.some(keyword => line.startsWith(keyword));
+        // safeKeywords.some(keyword => line.startsWith(keyword));
+        const isKeywordSafe = true;
         
         return isKeywordSafe || this.isFunctionCall(line);
     }
