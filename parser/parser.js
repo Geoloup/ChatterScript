@@ -7,7 +7,8 @@ class ChatterScript {
 
     loadFromFile(filePath) {
         if (!filePath.endsWith('.csc')) {
-            throw new Error("Invalid file extension. Please provide a '.csc' file.");
+            this.log.push("Invalid file extension. Please provide a '.csc' file.");
+            return; // Stop loading if the file extension is invalid
         }
 
         const script = fs.readFileSync(filePath, 'utf8');
@@ -59,8 +60,8 @@ class ChatterScript {
                     this.log.push(`Bot says: ${message}`);
                 }
             } else {
+                // Log unsafe code detection without throwing an error
                 this.log.push(`Unsafe code detected: ${line}`);
-                throw new Error(`Unsafe code detected: ${line}`);
             }
         }
     }
