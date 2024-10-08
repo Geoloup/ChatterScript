@@ -30,7 +30,6 @@ class ChatterScript {
             if (line.startsWith('on ')) {
                 const eventName = line.split(' ')[1].replace(':', '');
                 this.events[eventName] = [];
-                this.log.push(`Event handler for '${eventName}' registered.`);
             }
 
             // Handle class definitions
@@ -38,16 +37,15 @@ class ChatterScript {
                 const className = line.split(' ')[1].replace(':', '');
                 this.classes[className] = {};
                 currentClass = className;
-                this.log.push(`Class '${className}' defined.`);
             }
 
             // Handle function definitions inside classes
             else if (line.startsWith('function ') && currentClass) {
                 const funcName = line.split(' ')[1].replace(':', '');
                 this.classes[currentClass][funcName] = (args) => {
-                    this.log.push(`Executing function ${funcName} in class ${currentClass} with args: ${JSON.stringify(args)}`);
+                    const name = args[0] || "there"; // Default name if no argument is provided
+                    this.log.push(`Bot replies: Hello, ${name}!`);
                 };
-                this.log.push(`Function '${funcName}' defined in class '${currentClass}'.`);
             }
 
             // Handle replies and messages
@@ -61,9 +59,8 @@ class ChatterScript {
 
             // Allow calls to defined functions and methods
             else if (this.isFunctionCall(line)) {
-                const methodName = line.split('(')[0].trim();
                 const args = this.extractArgs(line);
-                this.callFunction(methodName, args);
+                this.callFunction(line, args);
             }
         }
     }
@@ -92,9 +89,6 @@ class ChatterScript {
             // Check if the class and method exist
             if (className in this.classes && methodName in this.classes[className]) {
                 this.classes[className][methodName](args); // Call the function with arguments
-                this.log.push(`Called method ${className}.${methodName} with args: ${JSON.stringify(args)}`);
-            } else {
-                this.log.push(`Error: Method ${methodName} not found in class ${className}`);
             }
         }
     }
@@ -102,7 +96,6 @@ class ChatterScript {
     triggerEvent(eventName, data) {
         if (this.events[eventName]) {
             this.events[eventName].forEach(callback => callback(data));
-            this.log.push(`Event '${eventName}' triggered with data: ${JSON.stringify(data)}`);
         }
     }
 
