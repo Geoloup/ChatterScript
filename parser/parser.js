@@ -43,18 +43,10 @@ class ChatterScript {
             else if (line.startsWith('function ') && currentClass) {
                 const funcName = line.split(' ')[1].replace(':', '');
                 this.classes[currentClass][funcName] = (args) => {
+                    // Respond to the argument passed
                     const name = args[0] || "there"; // Default name if no argument is provided
                     this.log.push(`Bot replies: Hello, ${name}!`);
                 };
-            }
-
-            // Handle replies and messages
-            else if (line.startsWith('reply(')) {
-                const message = line.match(/"([^"]+)"/)[1];
-                this.log.push(`Bot replies: ${message}`);
-            } else if (line.startsWith('say(')) {
-                const message = line.match(/"([^"]+)"/)[1];
-                this.log.push(`Bot says: ${message}`);
             }
 
             // Allow calls to defined functions and methods
