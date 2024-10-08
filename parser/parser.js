@@ -2,6 +2,7 @@ class ChatterScript {
     constructor() {
         this.classes = {};
         this.events = {};
+        this.log = []; // Array to store log messages
     }
 
     loadFromFile(filePath) {
@@ -24,13 +25,12 @@ class ChatterScript {
         for (let line of lines) {
             line = line.trim();
 
-            // Secure evaluation: only allow known safe commands
             if (this.isSafe(line)) {
-
                 // Handle events
                 if (line.startsWith('on ')) {
                     const eventName = line.split(' ')[1].replace(':', '');
                     this.events[eventName] = [];
+                    this.log.push(`Event handler for '${eventName}' registered.`);
                 }
 
                 // Handle class definitions
@@ -38,35 +38,33 @@ class ChatterScript {
                     const className = line.split(' ')[1].replace(':', '');
                     this.classes[className] = {};
                     currentClass = className;
+                    this.log.push(`Class '${className}' defined.`);
                 }
 
                 // Handle functions inside classes
                 else if (line.startsWith('function ') && currentClass) {
                     const funcName = line.split(' ')[1].replace(':', '');
                     this.classes[currentClass][funcName] = (args) => {
-                        console.log(`Executing function ${funcName} in class ${currentClass} with args:`, args);
+                        this.log.push(`Executing function ${funcName} in class ${currentClass} with args: ${JSON.stringify(args)}`);
                     };
+                    this.log.push(`Function '${funcName}' defined in class '${currentClass}'.`);
                 }
 
-                // Handle function invocations
+                // Handle replies and messages
                 else if (line.startsWith('reply(')) {
                     const message = line.match(/"([^"]+)"/)[1];
-                    console.log('Bot replies:', message);
-                }
-
-                // Example to trigger the event
-                else if (line.startsWith('say(')) {
+                    this.log.push(`Bot replies: ${message}`);
+                } else if (line.startsWith('say(')) {
                     const message = line.match(/"([^"]+)"/)[1];
-                    console.log('Bot says:', message);
+                    this.log.push(`Bot says: ${message}`);
                 }
             } else {
-                console.error(`Unsafe code detected: ${line}`);
+                this.log.push(`Unsafe code detected: ${line}`);
             }
         }
     }
 
     isSafe(line) {
-        // Define safe operations here
         const safeKeywords = ['on', 'class', 'function', 'reply', 'say', 'if', 'contains'];
         return safeKeywords.some(keyword => line.startsWith(keyword));
     }
@@ -74,6 +72,11 @@ class ChatterScript {
     triggerEvent(eventName, data) {
         if (this.events[eventName]) {
             this.events[eventName].forEach(callback => callback(data));
+            this.log.push(`Event '${eventName}' triggered with data: ${JSON.stringify(data)}`);
         }
+    }
+
+    getLogs() {
+        return this.log.join('\n'); // Return logs as a single string
     }
 }
