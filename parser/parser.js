@@ -52,6 +52,7 @@ class ChatterScript {
             // Allow calls to defined functions and methods
             else if (this.isFunctionCall(line)) {
                 const args = this.extractArgs(line);
+                console.log(line,args)
                 this.callFunction(line, args);
             }
         }
