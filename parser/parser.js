@@ -81,7 +81,7 @@ class ChatterScript {
             const methodName = match[2];
             // Check if the class and method exist
             if (className in this.classes && methodName in this.classes[className]) {
-                this.classes[className][methodName](args); // Call the function with arguments
+                this.classes[className][methodName](args.join(',')); // Call the function with arguments
             }
         }
     }
